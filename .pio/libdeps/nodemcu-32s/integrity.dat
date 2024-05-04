@@ -1,7 +1,9 @@
-adafruit/Adafruit Unified Sensor@^1.1.14
-adafruit/DHT sensor library@^1.4.6
-adafruit/Adafruit GFX Library@^1.11.9
-adafruit/MAX6675 library@^1.1.2
-adafruit/Adafruit SSD1306@^2.5.10
 https://github.com/plerup/espsoftwareserial
+adafruit/Adafruit SSD1306@^2.5.10
+adafruit/Adafruit GFX Library@^1.11.9
+tobiasschuerg/ESP8266 Influxdb@^3.13.1
 https://github.com/emelianov/modbus-esp8266
+adafruit/DHT sensor library@^1.4.6
+adafruit/MAX6675 library@^1.1.2
+adafruit/Adafruit Unified Sensor@^1.1.14
+mathworks/ThingSpeak@^2.0.0
