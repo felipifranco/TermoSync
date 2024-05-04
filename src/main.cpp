@@ -20,6 +20,14 @@ Point sensorReadings("measurements");
 
 #include "ThingSpeak.h"
 
+WiFiClient  client;
+unsigned long myChannelNumber = 2535164;
+const char * myWriteAPIKey = "JWTRE9V4SOC5CMCB";
+
+// Timer variables
+unsigned long lastTime = 0;
+unsigned long timerDelay = 30000;
+
 #include <ModbusRTU.h> // https://github.com/emelianov/modbus-esp8266
 #include <SoftwareSerial.h> // https://github.com/plerup/espsoftwareserial
 
@@ -105,6 +113,8 @@ void setup() {
     Serial.print("InfluxDB connection failed: ");
     Serial.println(influxClient.getLastErrorMessage());
   }
+
+  ThingSpeak.begin(client);  // Initialize ThingSpeak
 }
 
 void loop() {
@@ -205,6 +215,23 @@ void loop() {
     Serial.print("InfluxDB write failed: ");
     Serial.println(influxClient.getLastErrorMessage());
   }
+
+  // set the fields with the values
+  ThingSpeak.setField(1, res[0]);
+  ThingSpeak.setField(2, tempC);
+  ThingSpeak.setField(3, tempDHT);
+  
+  // Write to ThingSpeak. There are up to 8 fields in a channel, allowing you to store up to 8 different
+  // pieces of information in a channel.  Here, we write to field 1.
+  int x = ThingSpeak.writeFields(myChannelNumber, myWriteAPIKey);
+
+  if(x == 200){
+    Serial.println("Channel update successful.");
+  }
+  else{
+    Serial.println("Problem updating channel. HTTP error code " + String(x));
+  }
+  lastTime = millis();
 
   Serial.println();
   delay(20000);
