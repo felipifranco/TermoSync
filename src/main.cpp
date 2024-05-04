@@ -28,6 +28,54 @@ const char * myWriteAPIKey = "JWTRE9V4SOC5CMCB";
 unsigned long lastTime = 0;
 unsigned long timerDelay = 30000;
 
+#include <Firebase_ESP_Client.h>
+// Provide the token generation process info.
+#include "addons/TokenHelper.h"
+// Provide the RTDB payload printing info and other helper functions.
+#include "addons/RTDBHelper.h"
+
+#define API_KEY "AIzaSyCBuTxLZ1MQyh03ECKl_RwZQ8tb3mlZQgU"
+#define USER_EMAIL "termosync@termosync.com"
+#define USER_PASSWORD "termosync"
+#define DATABASE_URL "https://termosync-3d518-default-rtdb.firebaseio.com"
+
+// Define Firebase objects
+FirebaseData fbdo;
+FirebaseAuth auth;
+FirebaseConfig config;
+
+// Variables to save database paths
+String controladorPath;
+String supervisorioPath;
+String ambientePath;
+
+int timestamp;
+
+unsigned long getTime() {
+  time_t now;
+  struct tm timeinfo;
+  if (!getLocalTime(&timeinfo)) {
+    return(0);
+  }
+  time(&now);
+  return now;
+}
+
+// Write float values to the database
+void sendFloat(String path, float value){
+  if (Firebase.RTDB.setFloat(&fbdo, path.c_str(), value)){
+    Serial.print("Firebase: ");
+    Serial.print (value);
+    Serial.print(" on path: ");
+    Serial.print(path);
+    Serial.print(" ");
+  }
+  else {
+    Serial.println("FAILED");
+    Serial.println("REASON: " + fbdo.errorReason());
+  }
+}
+
 #include <ModbusRTU.h> // https://github.com/emelianov/modbus-esp8266
 #include <SoftwareSerial.h> // https://github.com/plerup/espsoftwareserial
 
@@ -115,6 +163,28 @@ void setup() {
   }
 
   ThingSpeak.begin(client);  // Initialize ThingSpeak
+
+  // Assign the api key (required)
+  config.api_key = API_KEY;
+
+  // Assign the user sign in credentials
+  auth.user.email = USER_EMAIL;
+  auth.user.password = USER_PASSWORD;
+
+  // Assign the RTDB URL (required)
+  config.database_url = DATABASE_URL;
+
+  Firebase.reconnectWiFi(true);
+  fbdo.setResponseSize(4096);
+
+  // Assign the callback function for the long running token generation task */
+  config.token_status_callback = tokenStatusCallback; //see addons/TokenHelper.h
+
+  // Assign the maximum retry of token generation
+  config.max_token_generation_retry = 5;
+
+  // Initialize the library with the Firebase authen and config
+  Firebase.begin(&config, &auth);
 }
 
 void loop() {
@@ -225,13 +295,30 @@ void loop() {
   // pieces of information in a channel.  Here, we write to field 1.
   int x = ThingSpeak.writeFields(myChannelNumber, myWriteAPIKey);
 
-  if(x == 200){
-    Serial.println("Channel update successful.");
+  if(x != 200){
+    Serial.println("Problem updating ThingSpeak channel. HTTP error code " + String(x));
   }
-  else{
-    Serial.println("Problem updating channel. HTTP error code " + String(x));
+
+  //Get current timestamp
+  timestamp = getTime();
+
+  // Update database path for sensor readings
+  controladorPath = "/readings/" + String(timestamp) + "/controlador"; // --> UsersData/<user_uid>/controlador
+  supervisorioPath = "/readings/" + String(timestamp) + "/supervisorio"; // --> UsersData/<user_uid>/supervisorio
+  ambientePath = "/readings/" + String(timestamp) + "/ambiente"; // --> UsersData/<user_uid>/ambiente
+
+  if (millis() - lastTime > timerDelay || lastTime == 0){
+    lastTime = millis();
+    // TODO add ThingSpeak && Firebase update
   }
-  lastTime = millis();
+
+  // Send new readings to database
+  if (Firebase.ready()){
+    // Send readings to database:
+    sendFloat(controladorPath, res[0]);
+    sendFloat(supervisorioPath, tempC);
+    sendFloat(ambientePath, tempDHT);
+  }
 
   Serial.println();
   delay(20000);
