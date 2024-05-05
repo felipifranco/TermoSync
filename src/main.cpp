@@ -1,43 +1,75 @@
 #include <WiFiMulti.h>
-WiFiMulti wifiMulti;
-#define DEVICE "ESP32"
-
 #include <InfluxDbClient.h>
 #include <InfluxDbCloud.h>
+#include "ThingSpeak.h"
+#include <Firebase_ESP_Client.h>
+#include "addons/TokenHelper.h" // Provide the token generation process info.
+#include "addons/RTDBHelper.h" // Provide the RTDB payload printing info and other helper functions.
 
-#define WIFI_SSID "SaoManoel"
-#define WIFI_PASSWORD "sm070780b"
+#include <ModbusRTU.h> // https://github.com/emelianov/modbus-esp8266
+#include <SoftwareSerial.h> // https://github.com/plerup/espsoftwareserial
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+#include <Adafruit_Sensor.h>
+#include <DHT.h>
+#include <max6675.h>
+
+#define WIFI_SSID "Zoo Assombrado"
+#define WIFI_PASSWORD "galinhas"
 
 #define INFLUXDB_URL "https://us-east-1-1.aws.cloud2.influxdata.com"
 #define INFLUXDB_TOKEN "7FU6sgkZlc8dRMCGen9rA3LHu2r4ATw-lRCZSY5zUVBfH1R5pVKgSaTGicu5k7DkDLDO4nI2uKz5JgAQuynfng=="
 #define INFLUXDB_ORG "a226763e581ce3a4"
 #define INFLUXDB_BUCKET "tcc"
-
 #define TZ_INFO "UTC-3"
-InfluxDBClient influxClient(INFLUXDB_URL, INFLUXDB_ORG, INFLUXDB_BUCKET, INFLUXDB_TOKEN, InfluxDbCloud2CACert);
-
-Point sensorReadings("measurements");
-
-#include "ThingSpeak.h"
-
-WiFiClient  client;
-unsigned long myChannelNumber = 2535164;
-const char * myWriteAPIKey = "JWTRE9V4SOC5CMCB";
-
-// Timer variables
-unsigned long lastTime = 0;
-unsigned long timerDelay = 30000;
-
-#include <Firebase_ESP_Client.h>
-// Provide the token generation process info.
-#include "addons/TokenHelper.h"
-// Provide the RTDB payload printing info and other helper functions.
-#include "addons/RTDBHelper.h"
 
 #define API_KEY "AIzaSyCBuTxLZ1MQyh03ECKl_RwZQ8tb3mlZQgU"
 #define USER_EMAIL "termosync@termosync.com"
 #define USER_PASSWORD "termosync"
 #define DATABASE_URL "https://termosync-3d518-default-rtdb.firebaseio.com"
+
+#define SLAVE_ID 2
+#define FIRST_REG 0
+#define REG_COUNT 1
+
+#define RX 26
+#define TX 27
+#define DE_RE 5
+
+#define SCREEN_WIDTH 128 // OLED display width, in pixels
+#define SCREEN_HEIGHT 64 // OLED display height, in pixels
+
+#define DHTPIN 14
+#define DHTTYPE DHT22
+
+#define THERMO_SO 25
+#define THERMO_CS 33
+#define THERMO_CLK 32
+
+#define TONE_PIN 13
+#define TONE 500
+#define TONE_TIME 50
+
+#define TIMERDELAY 30000
+
+SoftwareSerial RS485(RX, TX);
+
+// Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
+
+DHT dht(DHTPIN, DHTTYPE);
+MAX6675 thermocouple(THERMO_CLK, THERMO_CS, THERMO_SO);
+
+ModbusRTU mb;
+
+WiFiMulti wifiMulti;
+InfluxDBClient influxClient(INFLUXDB_URL, INFLUXDB_ORG, INFLUXDB_BUCKET, INFLUXDB_TOKEN, InfluxDbCloud2CACert);
+
+WiFiClient  client;
+
+// InfluxDB data 
+Point sensorReadings("measurements");
 
 // Define Firebase objects
 FirebaseData fbdo;
@@ -49,6 +81,12 @@ String controladorPath;
 String supervisorioPath;
 String ambientePath;
 
+// InfluxDB
+unsigned long myChannelNumber = 2535164;
+const char * myWriteAPIKey = "JWTRE9V4SOC5CMCB";
+
+// Timer variables
+unsigned long lastTime = 0;
 int timestamp;
 
 unsigned long getTime() {
@@ -76,45 +114,6 @@ void sendFloat(String path, float value){
   }
 }
 
-#include <ModbusRTU.h> // https://github.com/emelianov/modbus-esp8266
-#include <SoftwareSerial.h> // https://github.com/plerup/espsoftwareserial
-
-#include <Wire.h>
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
-#include <Adafruit_Sensor.h>
-#include <DHT.h>
-#include <max6675.h>
-
-#define SLAVE_ID 2
-#define FIRST_REG 0
-#define REG_COUNT 1
-
-#define RX 26
-#define TX 27
-#define DE_RE 5
-SoftwareSerial RS485(RX, TX);
-
-#define SCREEN_WIDTH 128 // OLED display width, in pixels
-#define SCREEN_HEIGHT 64 // OLED display height, in pixels
-// Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
-Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
-
-#define DHTPIN 14
-#define DHTTYPE DHT22
-DHT dht(DHTPIN, DHTTYPE);
-
-#define THERMO_SO 25
-#define THERMO_CS 33
-#define THERMO_CLK 32
-MAX6675 thermocouple(THERMO_CLK, THERMO_CS, THERMO_SO);
-
-#define TONE_PIN 13
-#define TONE 500
-#define TONE_TIME 50
-
-ModbusRTU mb;
-
 bool cb(Modbus::ResultCode event, uint16_t transactionId, void* data) {
   // if (event != Modbus::EX_SUCCESS) {
   //   Serial.print("Err 0x");
@@ -124,7 +123,11 @@ bool cb(Modbus::ResultCode event, uint16_t transactionId, void* data) {
 }
 
 void alarm(){
-  tone(TONE_PIN, TONE, TONE_TIME);
+  for (int i = 0; i < 3; i++) {
+    tone(TONE_PIN, TONE, TONE_TIME);
+    delay(150);
+    noTone(TONE_PIN);
+  }
 }
 
 void setup() {
@@ -162,7 +165,7 @@ void setup() {
     Serial.println(influxClient.getLastErrorMessage());
   }
 
-  ThingSpeak.begin(client);  // Initialize ThingSpeak
+  ThingSpeak.begin(client); // Initialize ThingSpeak
 
   // Assign the api key (required)
   config.api_key = API_KEY;
@@ -203,10 +206,6 @@ void loop() {
   float tempDHT = dht.readTemperature();
   float humidity = dht.readHumidity();
   float tempC = thermocouple.readCelsius();
-
-  if (abs(tempC - res[0]) > 5) {
-    alarm();
-  }
 
   if (isnan(humidity) || isnan(tempDHT)) {
     Serial.println("Erro ao ler o sensor DHT22!");
@@ -264,62 +263,64 @@ void loop() {
     display.println(" %"); 
 
     display.display();
-  }
 
-  // Clear fields for reusing the point. Tags will remain the same as set above.
-  sensorReadings.clearFields();
-  sensorReadings.addField("controlador", res[0]);
-  sensorReadings.addField("supervisorio", tempC);
-  sensorReadings.addField("ambiente", tempDHT);
+    if (millis() - lastTime > TIMERDELAY || lastTime == 0){
+      if (abs(tempC - res[0]) > 5) {
+        alarm();
+      }
 
-  // Print what are we exactly writing
-  Serial.print("Writing: ");
-  Serial.println(sensorReadings.toLineProtocol());
+      lastTime = millis();
+      // Clear fields for reusing the point. Tags will remain the same as set above.
+      sensorReadings.clearFields();
+      sensorReadings.addField("controlador", res[0]);
+      sensorReadings.addField("supervisorio", tempC);
+      sensorReadings.addField("ambiente", tempDHT);
 
-  // Check WiFi connection and reconnect if needed
-  if (wifiMulti.run() != WL_CONNECTED) {
-    Serial.println("Wifi connection lost");
-  }
-  // Write point
-  if (!influxClient.writePoint(sensorReadings)) {
-    Serial.print("InfluxDB write failed: ");
-    Serial.println(influxClient.getLastErrorMessage());
-  }
+      // Print what are we exactly writing
+      Serial.print("Writing: ");
+      Serial.println(sensorReadings.toLineProtocol());
 
-  // set the fields with the values
-  ThingSpeak.setField(1, res[0]);
-  ThingSpeak.setField(2, tempC);
-  ThingSpeak.setField(3, tempDHT);
-  
-  // Write to ThingSpeak. There are up to 8 fields in a channel, allowing you to store up to 8 different
-  // pieces of information in a channel.  Here, we write to field 1.
-  int x = ThingSpeak.writeFields(myChannelNumber, myWriteAPIKey);
+      // Check WiFi connection and reconnect if needed
+      if (wifiMulti.run() != WL_CONNECTED) {
+        Serial.println("Wifi connection lost");
+      }
+      // Write point
+      if (!influxClient.writePoint(sensorReadings)) {
+        Serial.print("InfluxDB write failed: ");
+        Serial.println(influxClient.getLastErrorMessage());
+      }
 
-  if(x != 200){
-    Serial.println("Problem updating ThingSpeak channel. HTTP error code " + String(x));
-  }
+      // set the fields with the values
+      ThingSpeak.setField(1, res[0]);
+      ThingSpeak.setField(2, tempC);
+      ThingSpeak.setField(3, tempDHT);
+      
+      // Write to ThingSpeak. There are up to 8 fields in a channel, allowing you to store up to 8 different
+      // pieces of information in a channel.  Here, we write to field 1.
+      int x = ThingSpeak.writeFields(myChannelNumber, myWriteAPIKey);
 
-  //Get current timestamp
-  timestamp = getTime();
+      if(x != 200){
+        Serial.println("Problem updating ThingSpeak channel. HTTP error code " + String(x));
+      }
 
-  // Update database path for sensor readings
-  controladorPath = "/readings/" + String(timestamp) + "/controlador"; // --> UsersData/<user_uid>/controlador
-  supervisorioPath = "/readings/" + String(timestamp) + "/supervisorio"; // --> UsersData/<user_uid>/supervisorio
-  ambientePath = "/readings/" + String(timestamp) + "/ambiente"; // --> UsersData/<user_uid>/ambiente
+      //Get current timestamp
+      timestamp = getTime();
 
-  if (millis() - lastTime > timerDelay || lastTime == 0){
-    lastTime = millis();
-    // TODO add ThingSpeak && Firebase update
-  }
-
-  // Send new readings to database
-  if (Firebase.ready()){
-    // Send readings to database:
-    sendFloat(controladorPath, res[0]);
-    sendFloat(supervisorioPath, tempC);
-    sendFloat(ambientePath, tempDHT);
+      // Update database path for sensor readings
+      controladorPath = "/readings/" + String(timestamp) + "/controlador"; // --> UsersData/<user_uid>/controlador
+      supervisorioPath = "/readings/" + String(timestamp) + "/supervisorio"; // --> UsersData/<user_uid>/supervisorio
+      ambientePath = "/readings/" + String(timestamp) + "/ambiente"; // --> UsersData/<user_uid>/ambiente
+      
+      // Send new readings to database
+      if (Firebase.ready()){
+        // Send readings to database:
+        sendFloat(controladorPath, res[0]);
+        sendFloat(supervisorioPath, tempC);
+        sendFloat(ambientePath, tempDHT);
+      }
+    }
   }
 
   Serial.println();
-  delay(20000);
+  delay(500);
 }
