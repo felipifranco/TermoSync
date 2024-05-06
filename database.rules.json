@@ -1,9 +1,7 @@
-// These rules grant access to a node matching the authenticated
-// user's ID from the Firebase auth token
 {
   "rules": {
     "readings": {
-    	".read": "auth != null",
+    	".read": "auth == null",
       ".write": "auth != null"
     }
   }

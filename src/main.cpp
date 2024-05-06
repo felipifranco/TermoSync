@@ -15,8 +15,8 @@
 #include <DHT.h>
 #include <max6675.h>
 
-#define WIFI_SSID "Zoo Assombrado"
-#define WIFI_PASSWORD "galinhas"
+#define WIFI_SSID "SaoManoel"
+#define WIFI_PASSWORD "sm070780b"
 
 #define INFLUXDB_URL "https://us-east-1-1.aws.cloud2.influxdata.com"
 #define INFLUXDB_TOKEN "7FU6sgkZlc8dRMCGen9rA3LHu2r4ATw-lRCZSY5zUVBfH1R5pVKgSaTGicu5k7DkDLDO4nI2uKz5JgAQuynfng=="

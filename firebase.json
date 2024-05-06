@@ -4,6 +4,7 @@
   },
   "hosting": {
     "public": "public",
+    "site": "termosyncapp",
     "ignore": [
       "firebase.json",
       "**/.*",
