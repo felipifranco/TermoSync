@@ -34,6 +34,10 @@
   </head>
   <body>
     <div>
+      <h2 id="timeValue"></h2>
+      <h2 id="ambienteValue"></h2>
+      <h2 id="controladorValue"></h2>
+      <h2 id="supervisorioValue"></h2>
       <canvas id="myChart"></canvas>
       <canvas id="controlador"></canvas>
       <canvas id="supervisorio"></canvas>
@@ -49,6 +53,23 @@
         //
         // firebase.auth().onAuthStateChanged(user => { });
         // firebase.database().ref('/path/to/ref').on('value', snapshot => { });
+
+        // Função para atualizar os valores exibidos nos elementos <h2>
+        function updateValues(label, ambiente, controlador, supervisorio) {
+          // Verifica se os valores são undefined antes de atualizar os elementos HTML
+          if (label !== undefined) {
+            document.getElementById("timeValue").textContent = "Última leitura: " + label;
+          }
+          if (ambiente !== undefined) {
+            document.getElementById("ambienteValue").textContent = "Ambiente: " + ambiente + " °C";
+          }
+          if (controlador !== undefined) {
+            document.getElementById("controladorValue").textContent = "Controlador: " + controlador + " °C";
+          }
+          if (supervisorio !== undefined) {
+            document.getElementById("supervisorioValue").textContent = "Supervisorio: " + supervisorio + " °C";
+          }
+        }
 
         function epochToDateTime(epochTime){
           var epochDate = new Date(epochTime*1000);
@@ -77,12 +98,16 @@
             supervisorioData.push(value.supervisorio);
             labels.push(epochToDateTime(key).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' }));
           });
-          console.log(labels);
+          
+          // Atualiza os valores exibidos nos elementos <h2>
+          updateValues(labels[labels.length - 1], ambienteData[ambienteData.length - 1], controladorData[controladorData.length - 1], supervisorioData[supervisorioData.length - 1]);
 
           // Verifica se existe um gráfico anterior e o destrói
-          var existingChart = Chart.getChart("myChart");
-          if (existingChart) {
-              existingChart.destroy();
+          if (Chart.getChart("myChart")) {
+            Chart.getChart("myChart").destroy();
+            Chart.getChart("controlador").destroy();
+            Chart.getChart("supervisorio").destroy();
+            Chart.getChart("ambiente").destroy();
           }
   
           // Cria um gráfico usando Chart.js
@@ -104,20 +129,6 @@
                   data: supervisorioData,
                   label: "Supervisorio",
                   borderColor: "#3cba9f",
-                  fill: false
-                }
-              ]
-            }
-          });
-          // Cria um gráfico usando Chart.js
-          new Chart(document.getElementById("ambiente"), {
-            type: 'line',
-            data: {
-              labels: labels,
-              datasets: [{ 
-                  data: ambienteData,
-                  label: "Ambiente",
-                  borderColor: "#3e95cd",
                   fill: false
                 }
               ]
@@ -150,6 +161,35 @@
                 }
               ]
             }
+          });
+          // Cria um gráfico usando Chart.js
+          new Chart(document.getElementById("ambiente"), {
+            type: 'line',
+            data: {
+              labels: labels,
+              datasets: [{ 
+                  data: ambienteData,
+                  label: "Ambiente",
+                  borderColor: "#3e95cd",
+                  fill: false
+                }
+              ]
+            }
+          });
+        });
+
+        firebase.database().ref('readings').orderByKey().limitToLast(1).on('value',   function(snapshot) {
+          var jsonData = snapshot.toJSON();
+          // Itera sobre cada chave do JSON
+          Object.keys(jsonData).forEach(function(key) {
+              // Obtém o valor associado à chave
+              var value = jsonData[key];
+              
+              // Imprime a chave e os valores
+              console.log("Chave:", epochToDateTime(key).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' }));
+              console.log("Ambiente:", value.ambiente);
+              console.log("Controlador:", value.controlador);
+              console.log("Supervisorio:", value.supervisorio);
           });
         });
 
