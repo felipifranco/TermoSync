@@ -11,68 +11,107 @@
     <script defer src="/__/firebase/10.11.1/firebase-auth-compat.js"></script>
     <script defer src="/__/firebase/10.11.1/firebase-database-compat.js"></script>
     <!-- 
-    <script defer src="/__/firebase/10.11.1/firebase-firestore-compat.js"></script>
-    <script defer src="/__/firebase/10.11.1/firebase-functions-compat.js"></script>
-    <script defer src="/__/firebase/10.11.1/firebase-messaging-compat.js"></script>
-    <script defer src="/__/firebase/10.11.1/firebase-storage-compat.js"></script>
-    <script defer src="/__/firebase/10.11.1/firebase-analytics-compat.js"></script>
-    <script defer src="/__/firebase/10.11.1/firebase-remote-config-compat.js"></script>
-    <script defer src="/__/firebase/10.11.1/firebase-performance-compat.js"></script> 
-    -->
+      <script defer src="/__/firebase/10.11.1/firebase-firestore-compat.js"></script>
+      <script defer src="/__/firebase/10.11.1/firebase-functions-compat.js"></script>
+      <script defer src="/__/firebase/10.11.1/firebase-messaging-compat.js"></script>
+      <script defer src="/__/firebase/10.11.1/firebase-storage-compat.js"></script>
+      <script defer src="/__/firebase/10.11.1/firebase-analytics-compat.js"></script>
+      <script defer src="/__/firebase/10.11.1/firebase-remote-config-compat.js"></script>
+      <script defer src="/__/firebase/10.11.1/firebase-performance-compat.js"></script> 
+      -->
     <!-- 
-      initialize the SDK after all desired features are loaded, set useEmulator to false
-      to avoid connecting the SDK to running emulators.
-    -->
+        initialize the SDK after all desired features are loaded, set useEmulator to false
+        to avoid connecting the SDK to running emulators.
+      -->
     <script defer src="/__/firebase/init.js?useEmulator=true"></script>
-      
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" 
+      integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css"
+      integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+    <script src="https://cdn.rawgit.com/Mikhus/canvas-gauges/gh-pages/download/2.1.7/all/gauge.min.js"></script>
     <style media="screen">
       body { background: #FFFFFF; color: rgba(0,0,0,0.87); font-family: Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; }
       #load { color: rgba(0,0,0,0.4); text-align: center; font-size: 13px; }
     </style>
   </head>
   <body>
-    <div>
-      <h2 id="timeValue"></h2>
-      <h2 id="ambienteValue"></h2>
-      <h2 id="controladorValue"></h2>
-      <h2 id="supervisorioValue"></h2>
-      <canvas id="myChart"></canvas>
-      <canvas id="controlador"></canvas>
-      <canvas id="supervisorio"></canvas>
-      <canvas id="ambiente"></canvas>
+    <div class="container">
+      <div class="row">
+        <h2 id="timeValue"></h2>
+      </div>
+      <div class="row">
+        <div class="col">
+          <canvas id="gauge-A"></canvas>
+        </div>
+        <div class="col">
+          <canvas id="gauge-C"></canvas>
+        </div>
+        <div class="col">
+          <canvas id="gauge-S"></canvas>
+        </div>
+      </div>
+      <div class="row">
+        <h2 id="ambienteValue"></h2>
+        <h2 id="controladorValue"></h2>
+        <h2 id="supervisorioValue"></h2>
+      </div>
+      <div class="row">
+        <div class="col">
+          <canvas id="myChart"></canvas>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col">
+          <canvas id="controlador"></canvas>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col">
+          <canvas id="supervisorio"></canvas>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col">
+          <canvas id="ambiente"></canvas>
+        </div>
+      </div>
     </div>
     <p id="load">Firebase SDK Loading&hellip;</p>
-
+    
     <script>
       document.addEventListener('DOMContentLoaded', function() {
         const loadEl = document.querySelector('#load');
-        // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
-        // // The Firebase SDK is initialized and available here!
-        //
-        // firebase.auth().onAuthStateChanged(user => { });
-        // firebase.database().ref('/path/to/ref').on('value', snapshot => { });
-
         // Função para atualizar os valores exibidos nos elementos <h2>
-        function updateValues(label, ambiente, controlador, supervisorio) {
-          // Verifica se os valores são undefined antes de atualizar os elementos HTML
-          if (label !== undefined) {
-            document.getElementById("timeValue").textContent = "Última leitura: " + label;
-          }
-          if (ambiente !== undefined) {
-            document.getElementById("ambienteValue").textContent = "Ambiente: " + ambiente + " °C";
-          }
+          function updateValues(label, ambiente, controlador, supervisorio) {
+            // Verifica se os valores são undefined antes de atualizar os elementos HTML
+            if (label !== undefined) {
+              document.getElementById("timeValue").textContent = "Última leitura: " + label;
+            }
+            if (ambiente !== undefined) {
+              document.getElementById("ambienteValue").textContent = "Ambiente: " + ambiente + " °C";
+              gaugeA.value = ambiente;
+              // console.log(gaugeA);
+              gaugeA.options.title = "Ambiente";
+              gaugeA.update();
+            }
           if (controlador !== undefined) {
             document.getElementById("controladorValue").textContent = "Controlador: " + controlador + " °C";
+            gaugeC.value = controlador;
+            gaugeC.options.title = "Controlador";
+            gaugeC.update();
           }
           if (supervisorio !== undefined) {
             document.getElementById("supervisorioValue").textContent = "Supervisorio: " + supervisorio + " °C";
+            gaugeS.value = supervisorio;
+            gaugeS.options.title = "Supervisorio";
+            gaugeS.update();
           }
         }
-
-        function epochToDateTime(epochTime){
-          var epochDate = new Date(epochTime*1000);
+        
+        function epochToDateTime(epochTime) {
+          var epochDate = new Date(epochTime * 1000);
           return epochDate;
         }
         
@@ -100,7 +139,7 @@
           });
           
           // Atualiza os valores exibidos nos elementos <h2>
-          updateValues(labels[labels.length - 1], ambienteData[ambienteData.length - 1], controladorData[controladorData.length - 1], supervisorioData[supervisorioData.length - 1]);
+            updateValues(labels[labels.length - 1], ambienteData[ambienteData.length - 1], controladorData[controladorData.length - 1], supervisorioData[supervisorioData.length - 1]);
 
           // Verifica se existe um gráfico anterior e o destrói
           if (Chart.getChart("myChart")) {
@@ -109,28 +148,28 @@
             Chart.getChart("supervisorio").destroy();
             Chart.getChart("ambiente").destroy();
           }
-  
+
           // Cria um gráfico usando Chart.js
           new Chart(document.getElementById("myChart"), {
             type: 'line',
             data: {
               labels: labels,
-              datasets: [{ 
-                  data: ambienteData,
-                  label: "Ambiente",
-                  borderColor: "#3e95cd",
-                  fill: false
-                }, { 
-                  data: controladorData,
-                  label: "Controlador",
-                  borderColor: "#8e5ea2",
-                  fill: false
-                }, { 
-                  data: supervisorioData,
-                  label: "Supervisorio",
-                  borderColor: "#3cba9f",
-                  fill: false
-                }
+              datasets: [{
+                data: ambienteData,
+                label: "Ambiente",
+                borderColor: "#3e95cd",
+                fill: false
+              }, {
+                data: controladorData,
+                label: "Controlador",
+                borderColor: "#8e5ea2",
+                fill: false
+              }, {
+                data: supervisorioData,
+                label: "Supervisorio",
+                borderColor: "#3cba9f",
+                fill: false
+              }
               ]
             }
           });
@@ -139,12 +178,12 @@
             type: 'line',
             data: {
               labels: labels,
-              datasets: [{ 
-                  data: controladorData,
-                  label: "Controlador",
-                  borderColor: "#8e5ea2",
-                  fill: false
-                }
+              datasets: [{
+                data: controladorData,
+                label: "Controlador",
+                borderColor: "#8e5ea2",
+                fill: false
+              }
               ]
             }
           });
@@ -153,12 +192,12 @@
             type: 'line',
             data: {
               labels: labels,
-              datasets: [{ 
-                  data: supervisorioData,
-                  label: "Supervisorio",
-                  borderColor: "#3cba9f",
-                  fill: false
-                }
+              datasets: [{
+                data: supervisorioData,
+                label: "Supervisorio",
+                borderColor: "#3cba9f",
+                fill: false
+              }
               ]
             }
           });
@@ -167,32 +206,85 @@
             type: 'line',
             data: {
               labels: labels,
-              datasets: [{ 
-                  data: ambienteData,
-                  label: "Ambiente",
-                  borderColor: "#3e95cd",
-                  fill: false
-                }
+              datasets: [{
+                data: ambienteData,
+                label: "Ambiente",
+                borderColor: "#3e95cd",
+                fill: false
+              }
               ]
             }
           });
         });
+        
+        // Create Temperature Gauge
+        var gaugeA = createTemperatureGauge('gauge-A');
+        var gaugeC = createTemperatureGauge('gauge-C');
+        var gaugeS = createTemperatureGauge('gauge-S');
+        gaugeA.draw();
+        gaugeC.draw();
+        gaugeS.draw();
 
-        firebase.database().ref('readings').orderByKey().limitToLast(1).on('value',   function(snapshot) {
-          var jsonData = snapshot.toJSON();
-          // Itera sobre cada chave do JSON
-          Object.keys(jsonData).forEach(function(key) {
-              // Obtém o valor associado à chave
-              var value = jsonData[key];
-              
-              // Imprime a chave e os valores
-              console.log("Chave:", epochToDateTime(key).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' }));
-              console.log("Ambiente:", value.ambiente);
-              console.log("Controlador:", value.controlador);
-              console.log("Supervisorio:", value.supervisorio);
+        function createTemperatureGauge(renderTo) {
+          var gauge = new RadialGauge({
+            renderTo: renderTo,
+            width: 300,
+            height: 300,
+            units: "°C",
+            // title: "Supervisorio",
+            minValue: 0,
+            startAngle: 45,
+            ticksAngle: 270,
+            maxValue: 100,
+            colorValueBoxRect: "#CCC",
+            colorValueBoxRectEnd: "#444444",
+            colorValueBoxBackground: "#fff",
+            valueDec: 2,
+            valueInt: 3,
+            majorTicks: [
+              "0",
+              "10",
+              "20",
+              "30",
+              "40",
+              "50",
+              "60",
+              "70",
+              "80",
+              "90",
+              "100"
+            ],
+            minorTicks: 4,
+            strokeTicks: true,
+            highlights: [
+              {
+                "from": 20,
+                "to": 30,
+                "color": "rgba(150, 225, 195, .75)"
+              }
+            ],
+            colorPlate: "#fff",
+            colorBarProgress: "#CC2936",
+            colorBarProgressEnd: "#049faa",
+            borderShadowWidth: 0,
+            borders: false,
+            needleType: "arrow",
+            needleWidth: 2,
+            needleCircleSize: 7,
+            needleCircleOuter: true,
+            needleCircleInner: true,
+            animationDuration: 1500,
+            animationRule: "linear",
+            barWidth: 3,
           });
-        });
+          return gauge;
+        }
 
+        // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
+        // // The Firebase SDK is initialized and available here!
+        //
+        // firebase.auth().onAuthStateChanged(user => { });
+        // firebase.database().ref('/path/to/ref').on('value', snapshot => { });
         // firebase.firestore().doc('/foo/bar').get().then(() => { });
         // firebase.functions().httpsCallable('yourFunction')().then(() => { });
         // firebase.messaging().requestPermission().then(() => { });
@@ -206,13 +298,13 @@
         try {
           let app = firebase.app();
           let features = [
-            'auth', 
-            'database', 
+            'auth',
+            'database',
             'firestore',
             'functions',
-            'messaging', 
-            'storage', 
-            'analytics', 
+            'messaging',
+            'storage',
+            'analytics',
             'remoteConfig',
             'performance',
           ].filter(feature => typeof app[feature] === 'function');
