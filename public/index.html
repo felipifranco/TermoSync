@@ -37,65 +37,86 @@
     </style>
   </head>
   <body>
-    <div class="container">
-      <div class="row">
-        <h2 id="timeValue"></h2>
-      </div>
-      <div class="row">
-        <div class="col">
-          <canvas id="gauge-A"></canvas>
+    <div class="col-lg-8 mx-auto p-3 py-md-5">
+      <header class="d-flex align-items-center pb-3 mb-5 border-bottom">
+        <a href="/" class="d-flex align-items-center text-dark text-decoration-none">
+          <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xodm="http://www.corel.com/coreldraw/odm/2003" xml:space="preserve" width="40" height="40" class="me-2" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd" viewBox="0 0 1706.66 1706.66">
+            <defs>
+             <style type="text/css"><![CDATA[.fil0{fill:url(#id0)}]]></style>
+             <linearGradient id="id0" gradientUnits="userSpaceOnUse" x1="0.02" y1="853.71" x2="1706.63" y2="853.71">
+              <stop offset="0" style="stop-opacity:1; stop-color:#FFB800"/>
+              <stop offset="1" style="stop-opacity:1; stop-color:#FF5329"/>
+             </linearGradient>
+            </defs>
+            <g id="Layer_x0020_1">
+             <path class="fil0" d="M328.78 1315l140.06 0c48.28,0 48.3,73.33 0,73.33l-177.99 0c-21.28,0 -36.67,-15.41 -36.67,-36.67 0,-40.54 4.07,-80.16 11.78,-118.46 -149.58,-17.84 -265.94,-145.44 -265.94,-299.75 0,-127.15 78.84,-239.62 197.33,-283.27 43.35,-158.48 204,-251.44 362.04,-213.39 107.6,-249.61 466.04,-239.55 560.44,14.24 169.08,-69.92 363.87,28.03 408.02,206.72 108.96,48.61 178.79,155.7 178.79,275.73 0,154.29 -116.35,281.89 -265.93,299.74 7.71,38.3 11.78,77.91 11.78,118.45 0,18.37 -13.35,36.67 -36.67,36.67l-178 0c-48.29,0 -48.28,-73.33 0,-73.33l140.07 0c-4.55,-65.79 -21.28,-128.27 -47.92,-185.24 -46.99,28.19 -128.44,76.74 -143.66,76.74 -37.3,0 -50.68,-49.77 -18.35,-68.43l126.13 -72.81c-37.55,-57.57 -86.04,-107.38 -142.52,-146.41l-74.25 128.6c-6.56,11.37 -18.68,18.33 -31.76,18.33 -28.07,0 -45.77,-30.69 -31.74,-55l74.67 -129.34c-60.48,-30.37 -127.57,-49.42 -198.5,-54.33l0 150.48c0,48.28 -73.33,48.27 -73.33,0.01l0 -150.48c-70.93,4.91 -138.02,23.96 -198.49,54.33l74.66 129.32c14.02,24.28 -3.66,55.01 -31.72,55.01 -13.11,0 -25.21,-6.97 -31.78,-18.35l-74.24 -128.59c-56.48,39.05 -105,88.85 -142.53,146.43l126.12 72.81c32.33,18.66 18.96,68.42 -18.35,68.42 -15.26,0 -96.66,-48.53 -143.65,-76.72 -26.63,56.96 -43.36,119.44 -47.91,185.22zm539.51 -42.2l93.69 -141.86c26.5,-40.13 87.67,0.29 61.17,40.42l-93.57 141.69c31.21,53.31 5.8,139.35 -76.24,139.35 -126.29,0 -115.37,-197.93 14.96,-179.6z"/>
+            </g>
+           </svg>
+          <span class="fs-4">TermoSyncApp</span>
+        </a>
+      </header>
+    
+      <main>
+        <h1 class="text-center" id="timeValue"></h1>
+        <div class="container">
+          <div class="row pb-3 mb-5 border-bottom">
+            <div class="col">
+              <canvas id="gauge-A"></canvas>
+              <figure class="text-center" id="ambienteValue"></figure>
+            </div>
+            <div class="col">
+              <canvas id="gauge-C"></canvas>
+              <figure class="text-center" id="controladorValue"></figure>
+            </div>
+            <div class="col">
+              <canvas id="gauge-S"></canvas>
+              <figure class="text-center" id="supervisorioValue"></figure>
+            </div>
+          </div>
+          <div class="row pb-3 mb-5">
+            <div class="col">
+              <canvas id="myChart"></canvas>
+            </div>
+          </div>
+          <div class="row pb-3 mb-5">
+            <div class="col">
+              <canvas id="controlador"></canvas>
+            </div>
+          </div>
+          <div class="row pb-3 mb-5">
+            <div class="col">
+              <canvas id="supervisorio"></canvas>
+            </div>
+          </div>
+          <div class="row pb-3 mb-5">
+            <div class="col">
+              <canvas id="ambiente"></canvas>
+            </div>
+          </div>
         </div>
-        <div class="col">
-          <canvas id="gauge-C"></canvas>
-        </div>
-        <div class="col">
-          <canvas id="gauge-S"></canvas>
-        </div>
-      </div>
-      <div class="row">
-        <h2 id="ambienteValue"></h2>
-        <h2 id="controladorValue"></h2>
-        <h2 id="supervisorioValue"></h2>
-      </div>
-      <div class="row">
-        <div class="col">
-          <canvas id="myChart"></canvas>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col">
-          <canvas id="controlador"></canvas>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col">
-          <canvas id="supervisorio"></canvas>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col">
-          <canvas id="ambiente"></canvas>
-        </div>
-      </div>
+      </main>
+      <footer class="pt-5 my-5 text-muted border-top">
+        Created by the TermoSync team &middot; &copy; 2024
+        <p id="load">Firebase SDK Loading&hellip;</p>
+      </footer>
     </div>
-    <p id="load">Firebase SDK Loading&hellip;</p>
     
     <script>
       document.addEventListener('DOMContentLoaded', function() {
         const loadEl = document.querySelector('#load');
         // Função para atualizar os valores exibidos nos elementos <h2>
-          function updateValues(label, ambiente, controlador, supervisorio) {
-            // Verifica se os valores são undefined antes de atualizar os elementos HTML
-            if (label !== undefined) {
-              document.getElementById("timeValue").textContent = "Última leitura: " + label;
-            }
-            if (ambiente !== undefined) {
-              document.getElementById("ambienteValue").textContent = "Ambiente: " + ambiente + " °C";
-              gaugeA.value = ambiente;
-              // console.log(gaugeA);
-              gaugeA.options.title = "Ambiente";
-              gaugeA.update();
-            }
+        function updateValues(label, ambiente, controlador, supervisorio) {
+          // Verifica se os valores são undefined antes de atualizar os elementos HTML
+          if (label !== undefined) {
+            document.getElementById("timeValue").textContent = "Última leitura: " + label;
+          }
+          if (ambiente !== undefined) {
+            document.getElementById("ambienteValue").textContent = "Ambiente: " + ambiente + " °C";
+            gaugeA.value = ambiente;
+            // console.log(gaugeA);
+            gaugeA.options.title = "Ambiente";
+            gaugeA.update();
+          }
           if (controlador !== undefined) {
             document.getElementById("controladorValue").textContent = "Controlador: " + controlador + " °C";
             gaugeC.value = controlador;
@@ -103,9 +124,9 @@
             gaugeC.update();
           }
           if (supervisorio !== undefined) {
-            document.getElementById("supervisorioValue").textContent = "Supervisorio: " + supervisorio + " °C";
+            document.getElementById("supervisorioValue").textContent = "Supervisório: " + supervisorio + " °C";
             gaugeS.value = supervisorio;
-            gaugeS.options.title = "Supervisorio";
+            gaugeS.options.title = "Supervisório";
             gaugeS.update();
           }
         }
@@ -166,11 +187,23 @@
                 fill: false
               }, {
                 data: supervisorioData,
-                label: "Supervisorio",
+                label: "Supervisório",
                 borderColor: "#3cba9f",
                 fill: false
               }
               ]
+            },
+            options: {
+              interaction: {
+                intersect: false,
+                mode: 'index',
+              },
+              plugins: {
+                title: {
+                  display: true,
+                  text: 'Histórico de temperaturas',
+                }
+              }
             }
           });
           // Cria um gráfico usando Chart.js
@@ -185,6 +218,18 @@
                 fill: false
               }
               ]
+            },
+            options: {
+              interaction: {
+                intersect: false,
+                mode: 'index',
+              },
+              plugins: {
+                title: {
+                  display: true,
+                  text: 'Histórico de temperaturas do controlador',
+                }
+              }
             }
           });
           // Cria um gráfico usando Chart.js
@@ -194,11 +239,23 @@
               labels: labels,
               datasets: [{
                 data: supervisorioData,
-                label: "Supervisorio",
+                label: "Supervisório",
                 borderColor: "#3cba9f",
                 fill: false
               }
               ]
+            },
+            options: {
+              interaction: {
+                intersect: false,
+                mode: 'index',
+              },
+              plugins: {
+                title: {
+                  display: true,
+                  text: 'Histórico de temperaturas do supervisório',
+                }
+              }
             }
           });
           // Cria um gráfico usando Chart.js
@@ -213,6 +270,18 @@
                 fill: false
               }
               ]
+            },
+            options: {
+              interaction: {
+                intersect: false,
+                mode: 'index',
+              },
+              plugins: {
+                title: {
+                  display: true,
+                  text: 'Histórico de temperaturas ambiente',
+                }
+              }
             }
           });
         });
